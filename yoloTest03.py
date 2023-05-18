@@ -2,10 +2,14 @@ import cv2
 import numpy as np
 import time # -- 프레임 계산을 위해 사용
 
-
-vedio_path = './video.mp4' #-- 사용할 영상 경로
+# vedio_path = './testVideo.mp4' #-- 사용할 영상 경로
 min_confidence = 0.5
 
+# cap = cv2.VideoCapture(vedio_path) #-- 웹캠 사용시 vedio_path를 0 으로 변경
+cap = cv2.VideoCapture(0) #-- 웹캠 사용시 vedio_path를 0 으로 변경
+
+# fourcc = cv2.VideoWriter_fourcc(*"XVID")
+# writer = cv2.VideoWriter("output1.avi",fourcc,30.0,(640,480))q
 
 def detectAndDisplay(frame):
     start_time = time.time()
@@ -14,8 +18,10 @@ def detectAndDisplay(frame):
     #cv2.imshow("Original Image", img)
 
     #-- 창 크기 설정
+    # 네트워크에 넣기 위한 전처리
     blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
 
+    # 전처리된 blob 네트워크에 입력
     net.setInput(blob)
     outs = net.forward(output_layers)
 
@@ -57,7 +63,7 @@ def detectAndDisplay(frame):
     process_time = end_time - start_time
     print("=== A frame took {:.3f} seconds".format(process_time))
 
-    out.write(frame)
+    # writer.write(frame)
     cv2.imshow("YOLO test", img)
     
 #-- yolo 포맷 및 클래스명 불러오기
@@ -74,13 +80,13 @@ classes = []
 with open("./coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
 layer_names = net.getLayerNames()
-output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 colors = np.random.uniform(0, 255, size=(len(classes), 3))
 
 #-- 비디오 활성화
-cap = cv2.VideoCapture(vedio_path) #-- 웹캠 사용시 vedio_path를 0 으로 변경
-foutcc = cv2.VideoWriter_fourcc(*"XVID")
-out = cv2.VideoWriter("output1.avi",foutcc,30.0,(640,480))
+# cap = cv2.VideoCapture(vedio_path) #-- 웹캠 사용시 vedio_path를 0 으로 변경
+# fourcc = cv2.VideoWriter_fourcc(*"XVID")
+# writer = cv2.VideoWriter("output1.avi",fourcc,30.0,(640,480))
 
 if not cap.isOpened:
     print('--(!)Error opening video capture')
@@ -97,5 +103,5 @@ while True:
         break
 
 cap.release()
-out.release()
+# writer.release()
 cv2.destroyAllWindows()
